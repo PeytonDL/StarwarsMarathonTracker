@@ -313,7 +313,7 @@ async function save(mutator) {
     headers: { Authorization: `Bearer ${token()}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!r.ok) throw new Error(`Save failed: GitHub said ${r.status}`);
+  if (!r.ok) throw new Error(r.status === 403 ? "Save failed (403): your token can read but not write. On GitHub, edit the token and set Contents to \"Read and write\"." : `Save failed: GitHub said ${r.status}`);
   updatedAt = Date.now(); lastFetchOk = Date.now();
 }
 
