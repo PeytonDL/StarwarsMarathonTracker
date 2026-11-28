@@ -130,6 +130,13 @@ input[type=time] { font-size: 20px; font-variant-numeric: tabular-nums; }
 .btn:disabled { opacity: .5; cursor: default; }
 .msg { font-size: 13px; margin-top: 10px; min-height: 1em; }
 .msg.err { color: var(--late); } .msg.ok { color: var(--good); }
+.progress-card { padding: 12px 14px; margin-bottom: 16px; }
+.progress-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.progress-top .pct { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.progress-top .note { font-size: 12.5px; color: var(--muted); }
+.bar { height: 10px; border-radius: 999px; background: var(--surface-2); margin-top: 8px; display: flex; gap: 2px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--surface-2); position: relative; }
+.bar i b { position: absolute; inset: 0 auto 0 0; background: var(--accent); }
 footer { margin-top: 20px; font-size: 12px; color: var(--faint); text-align: center; }
 details.table { margin-top: 6px; font-size: 13px; }
 details.table summary { cursor: pointer; color: var(--muted); }
@@ -149,6 +156,8 @@ details.table td, details.table th { padding: 4px 6px; border-bottom: 1px solid 
   </header>
 
   <section class="stats" id="stats"></section>
+
+  <section class="card progress-card" id="progress"></section>
 
   <section class="card chart-card">
     <div class="chart-head">
@@ -370,6 +379,15 @@ function render() {
       <div class="note">${cur ? "Ends ≈ " + t(cur.pEnd) : nxt ? "Starts ≈ " + t(nxt.pStart) : "Marathon complete 🎉"}</div></div>
     <div class="stat"><div class="label">Runtime left</div><div class="value">${dur(remaining / MIN)}</div>
       <div class="note">${P.filter(m => m.pEnd <= now).length} of 12 movies done</div></div>`;
+
+  // progress
+  const watched = TOTAL - remaining, pct = watched / TOTAL * 100;
+  document.getElementById("progress").innerHTML = `
+    <div class="progress-top"><span class="pct">${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% complete</span>
+      <span class="note">${dur(watched / MIN)} watched of ${dur(TOTAL / MIN)}</span></div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct.toFixed(0)}" aria-label="Marathon progress">${
+      P.map(m => { const f = Math.max(0, Math.min(1, (now - m.pStart) / m.dur)); return `<i style="flex:${m.dur}" title="${esc(m.title)}"><b style="width:${(f * 100).toFixed(1)}%"></b></i>`; }).join("")
+    }</div>`;
 
   // list
   document.getElementById("list").innerHTML = P.map(m => {
